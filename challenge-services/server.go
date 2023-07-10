@@ -65,6 +65,9 @@ func salvarCotacaoNoBanco(cotacao string) error {
 	}
 	defer db.Close()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
 	// Cria a tabela se ela não existir
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS cotacoes (cotacao TEXT)")
 	if err != nil {
@@ -72,7 +75,7 @@ func salvarCotacaoNoBanco(cotacao string) error {
 	}
 
 	// Insere a cotação na tabela
-	_, err = db.Exec("INSERT INTO cotacoes (cotacao) VALUES (?)", cotacao)
+	_, err = db.ExecContext(ctx, "INSERT INTO cotacoes (cotacao) VALUES (?)", cotacao)
 	if err != nil {
 		return fmt.Errorf("erro ao inserir a cotação no banco de dados: %v", err)
 	}
